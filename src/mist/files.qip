@@ -1,0 +1,6 @@
+set_global_assignment -name VERILOG_FILE       ../src/mist/mist_io_x.v
+set_global_assignment -name VERILOG_FILE       ../src/mist/osd_x.v
+set_global_assignment -name SYSTEMVERILOG_FILE ../src/mist/sd_card.sv
+#et_global_assignment -name SYSTEMVERILOG_FILE ../src/mist/video_mixer.sv
+#et_global_assignment -name VERILOG_FILE       ../src/mist/scandoubler.v
+#et_global_assignment -name SYSTEMVERILOG_FILE ../src/mist/hq2x.sv
