@@ -101,10 +101,10 @@ set_location_assignment PIN_A10 -to sramWe
 set_location_assignment PIN_AA16 -to sramLb
 set_location_assignment PIN_AA20 -to sramOe
 set_location_assignment PIN_R2 -to sramUb
-set_location_assignment PIN_L21 -to sramDq[13]
 set_location_assignment PIN_F21 -to sramDq[15]
-set_location_assignment PIN_M22 -to sramDq[12]
 set_location_assignment PIN_J22 -to sramDq[14]
+set_location_assignment PIN_L21 -to sramDq[13]
+set_location_assignment PIN_M22 -to sramDq[12]
 set_location_assignment PIN_L22 -to sramDq[11]
 set_location_assignment PIN_H22 -to sramDq[10]
 set_location_assignment PIN_H21 -to sramDq[9]
@@ -118,8 +118,8 @@ set_location_assignment PIN_B8 -to sramDq[2]
 set_location_assignment PIN_A13 -to sramDq[1]
 set_location_assignment PIN_B7 -to sramDq[0]
 set_location_assignment PIN_AB15 -to sramA[20]
-set_location_assignment PIN_A17 -to sramA[18]
 set_location_assignment PIN_U21 -to sramA[19]
+set_location_assignment PIN_A17 -to sramA[18]
 set_location_assignment PIN_B18 -to sramA[17]
 set_location_assignment PIN_A18 -to sramA[16]
 set_location_assignment PIN_A19 -to sramA[15]

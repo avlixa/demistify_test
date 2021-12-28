@@ -28,16 +28,21 @@ module np1
 //-------------------------------------------------------------------------------------------------
 
 wire clock56;
-wire clock16;
 wire locked;
 
 pll pll
 (
 	.inclk0  (clock50),
-	.locked  (locked ),
-	.c0      (clock56)  // 56 MHz
-//	.c1      (clock16)  // 16 MHz
+	.c0      (clock56),
+	.locked  (locked )
 );
+
+reg ne7M0;
+reg[2:0] ce = 1;
+always @(negedge clock56) if(locked) begin
+	ce <= ce+1'd1;
+	ne7M0 <= ~ce[0] & ~ce[1] & ~ce[2];
+end
 
 //-------------------------------------------------------------------------------------------------
 
@@ -65,13 +70,26 @@ substitute_mcu #(.sysclk_frequency(560)) controller
 	.spi_ss2      (spiSs2 ),
 	.spi_ss3      (spiSs3 ),
 	.spi_ss4      (spiSs4 ),
+	.spi_req      (       ),
+	.spi_ack      (1'b1   ),
 	.conf_data0   (confD0 ),
 	.ps2k_clk_in  (ps2kCk ),
 	.ps2k_dat_in  (ps2kDq ),
 	.ps2k_clk_out (ps2kOCk),
 	.ps2k_dat_out (ps2kODq),
+	.ps2m_clk_in  (1'b1   ),
+	.ps2m_dat_in  (1'b1   ),
+	.ps2m_clk_out (       ),
+	.ps2m_dat_out (       ),
+	.joy1         (8'hFF  ),
+	.joy2         (8'hFF  ),
+	.joy3         (8'hFF  ),
+	.joy4         (8'hFF  ),
+	.buttons      (8'hFF  ),
+	.c64_keys     (64'hFFFFFFFF),
 	.rxd          (1'b0   ),
-	.txd          (       )
+	.txd          (       ),
+	.intercept    (       )
 );
 
 assign ps2kCk = !ps2kOCk ? 1'b0 : 1'bZ;
@@ -86,29 +104,14 @@ localparam CONF_STR =
 	"V,v1.0"
 };
 
-wire [10:0] ps2_key;
-/*
-wire        sd_rd;
-wire        sd_wr;
-wire        sd_ack;
-wire [31:0] sd_lba;
-wire        sd_ack_conf;
-wire        sd_buff_wr;
-wire [ 8:0] sd_buff_addr;
-wire [ 7:0] sd_buff_din;
-wire [ 7:0] sd_buff_dout;
-
-wire [63:0] img_size;
-wire        img_mounted;
-*/
-wire       ioctl_ce = ne7M0;
 wire       ioctl_download;
+wire[ 7:0] ioctl_index;
+wire       ioctl_ce = 1'b1;
 wire       ioctl_wr;
 wire[24:0] ioctl_addr;
 wire[ 7:0] ioctl_dout;
 
-wire [31:0] status;
-wire [ 1:0] buttons;
+wire[31:0] status;
 
 mist_io #(.STRLEN($size(CONF_STR)>>3)) mist_io
 (
@@ -121,101 +124,48 @@ mist_io #(.STRLEN($size(CONF_STR)>>3)) mist_io
 	.SPI_SS2       (spiSs2),
 	.CONF_DATA0    (confD0),
 
-	.ps2_key       (ps2_key),
-/*
-	.sd_rd         (sd_rd),
-	.sd_wr         (sd_wr),
-	.sd_ack        (sd_ack),
-	.sd_lba        (sd_lba),
-	.sd_ack_conf   (sd_ack_conf),
-	.sd_buff_wr    (sd_buff_wr),
-	.sd_buff_addr  (sd_buff_addr),
-	.sd_buff_din   (sd_buff_din),
-	.sd_buff_dout  (sd_buff_dout),
-	
-	.img_size      (img_size),
-	.img_mounted   (img_mounted),
-*/
 	.ioctl_download(ioctl_download),
+	.ioctl_index   (ioctl_index   ),
 	.ioctl_ce      (ioctl_ce      ),
 	.ioctl_wr      (ioctl_wr      ),
 	.ioctl_addr    (ioctl_addr    ),
 	.ioctl_dout    (ioctl_dout    ),
 
+	.sd_conf       (1'b0),
+	.sd_sdhc       (1'b0),
+	.sd_lba        (32'd0),
+	.sd_rd         (2'd0),
+	.sd_wr         (2'd0),
+	.sd_ack        (),
+	.sd_ack_conf   (),
+	.sd_buff_addr  (),
+	.sd_buff_dout  (),
+	.sd_buff_din   (8'd0),
+	.sd_buff_wr    (),
+	.img_mounted   (),
+	.img_size      (),
+
+	.ps2_kbd_clk   (),
+	.ps2_kbd_data  (),
+	.ps2_mouse_clk (),
+	.ps2_mouse_data(),
+	.ps2_key       (),
+	.ps2_mouse     (),
+
 	.status        (status),
-	.buttons       (buttons)
+	.buttons       (      ),
+	.switches      (      ),
+
+	.joystick_0       (   ),
+	.joystick_1       (   ),
+	.joystick_analog_0(   ),
+	.joystick_analog_1(   ),
+
+	.ypbpr              ( ),
+	.scandoubler_disable( )
 );
 
 //-------------------------------------------------------------------------------------------------
-/*
-wire        sdclk;
-wire        sdss = 1;
-wire        sdmosi;
-wire        sdmiso;
-
-wire        vsdmiso;
-
-//wire sd_cs   = sdss   |  vsd_sel;
-//wire sd_sck  = sdclk  & ~vsd_sel;
-//wire sd_mosi = sdmosi & ~vsd_sel;
-wire sd_miso = 0;
-
-assign sdmiso = vsd_sel ? vsdmiso : sd_miso;
-
-reg vsd_sel = 0;
-always @(posedge clock56) if(img_mounted) vsd_sel <= |img_size;
-
-sd_card sd_card
-(
-	.clk_sys(clock56),
-	.clk_spi(clock16),
-	.reset(~locked),
-
-	.sck(sdclk),
-	.ss(sdss | ~vsd_sel),
-	.mosi(sdmosi),
-	.miso(vsdmiso),
-
-	.sdhc(1'b1),
-
-	.sd_rd(sd_rd),
-	.sd_wr(sd_wr),
-	.sd_ack(sd_ack),
-	.sd_lba(sd_lba),
-	.sd_ack_conf(sd_ack_conf),
-
-	.sd_buff_wr(sd_buff_wr),
-	.sd_buff_addr(sd_buff_addr),
-	.sd_buff_din(sd_buff_din),
-	.sd_buff_dout(sd_buff_dout)
-);
-
-reg sd_act;
-
-always @(posedge clock56) begin
-	reg old_mosi, old_miso;
-	integer timeout = 0;
-
-	old_mosi <= sdmosi;
-	old_miso <= sdmiso;
-
-	sd_act <= 0;
-	if(timeout < 1000000) begin
-		timeout <= timeout + 1;
-		sd_act <= 1;
-	end
-
-	if((old_mosi ^ sdmosi) || (old_miso ^ sdmiso)) timeout <= 0;
-end
-*/
-//-------------------------------------------------------------------------------------------------
-
-reg ne7M0;
-reg[2:0] ce = 1;
-always @(negedge clock56) if(locked) begin
-	ce <= ce+1'd1;
-	ne7M0 <= ~ce[0] & ~ce[1] & ~ce[2];
-end
 
 wire[2:0] border = 3'd0;
 
@@ -273,14 +223,14 @@ assign rgb = { ro, go, bo };
 
 //-------------------------------------------------------------------------------------------------
 
-wire       iniBusy = ioctl_download && ioctl_addr[24:16] == 0;
+wire       iniBusy = ioctl_download;
 wire       iniWr = ioctl_wr;
 wire[ 7:0] iniD = ioctl_dout;
 wire[15:0] iniA = ioctl_addr[15:0];
 
 assign sramUb = 1'b1;
 assign sramLb = 1'b0;
-assign sramOe = iniBusy;
+assign sramOe = 1'b0;
 assign sramWe = iniBusy ? !iniWr : 1'b1;
 assign sramDq = {2{ sramWe ? 8'bZ : iniD }};
 assign sramA  = { 5'd0, iniBusy ? iniA : { 1'b0, status[1:0], a } };
