@@ -255,14 +255,14 @@ assign rgb = { ro, go, bo };
 
 wire       iniBusy = ioctl_download;
 wire       iniWr = ioctl_wr;
-wire[ 7:0] iniD = ioctl_dout;
 wire[15:0] iniA = ioctl_addr[15:0];
+wire[ 7:0] iniD = ioctl_dout;
 
 assign sramUb = 1'b1;
 assign sramLb = 1'b0;
 assign sramOe = 1'b0;
 assign sramWe = iniBusy ? !iniWr : 1'b1;
-assign sramDq = {2{ sramWe ? 8'bZ : iniD }};
+assign sramDq = sramWe ? 16'bZ : {2{ iniD }};
 assign sramA  = { 5'd0, iniBusy ? iniA : { 1'b0, status[1:0], a } };
 
 //-------------------------------------------------------------------------------------------------
