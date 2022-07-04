@@ -5,8 +5,6 @@ module video
 	input  wire       clock,
 	input  wire       ce,
 
-	input  wire       model,
-
 	input  wire[ 2:0] border,
 
 	output wire       blank,
@@ -22,8 +20,8 @@ module video
 );
 //-------------------------------------------------------------------------------------------------
 
-wire[8:0] hcountEnd = model ? 9'd455 : 9'd447;
-wire[8:0] vcountEnd = model ? 9'd310 : 9'd311;
+wire[8:0] hcountEnd = 9'd447;
+wire[8:0] vcountEnd = 9'd311;
 
 //-------------------------------------------------------------------------------------------------
 

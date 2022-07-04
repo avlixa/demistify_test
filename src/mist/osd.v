@@ -15,16 +15,16 @@ module osd (
 	input  [1:0] rotate, //[0] - rotate [1] - left or right
 
 	// VGA signals coming from core
-	input  [5:0] R_in,
-	input  [5:0] G_in,
-	input  [5:0] B_in,
+	input  [2:0] R_in,
+	input  [2:0] G_in,
+	input  [2:0] B_in,
 	input        HSync,
 	input        VSync,
 
 	// VGA signals going to video connector
-	output [5:0] R_out,
-	output [5:0] G_out,
-	output [5:0] B_out
+	output [2:0] R_out,
+	output [2:0] G_out,
+	output [2:0] B_out
 );
 
 parameter OSD_X_OFFSET = 11'd0;
@@ -47,23 +47,23 @@ reg        osd_enable;
 (* ramstyle = "no_rw_check" *) reg  [7:0] osd_buffer[2047:0];  // the OSD buffer itself
 
 // the OSD has its own SPI interface to the io controller
+reg  [4:0] cnt3;
+reg [10:0] bcnt;
+reg  [7:0] sbuf;
+reg  [7:0] cmd;
 always@(posedge SPI_SCK, posedge SPI_SS3) begin
-	reg  [4:0] cnt;
-	reg [10:0] bcnt;
-	reg  [7:0] sbuf;
-	reg  [7:0] cmd;
 
 	if(SPI_SS3) begin
-		cnt  <= 0;
+		cnt3  <= 0;
 		bcnt <= 0;
 	end else begin
 		sbuf <= {sbuf[6:0], SPI_DI};
 
 		// 0:7 is command, rest payload
-		if(cnt < 15) cnt <= cnt + 1'd1;
-			else cnt <= 8;
+		if(cnt3 < 15) cnt3 <= cnt3 + 1'd1;
+			else cnt3 <= 8;
 
-		if(cnt == 7) begin
+		if(cnt3 == 7) begin
 			cmd <= {sbuf[6:0], SPI_DI};
 
 			// lower three command bits are line address
@@ -74,7 +74,7 @@ always@(posedge SPI_SCK, posedge SPI_SS3) begin
 		end
 
 		// command 0x20: OSDCMDWRITE
-		if((cmd[7:3] == 5'b00100) && (cnt == 15)) begin
+		if((cmd[7:3] == 5'b00100) && (cnt3 == 15)) begin
 			osd_buffer[bcnt] <= {sbuf[6:0], SPI_DI};
 			bcnt <= bcnt + 1'd1;
 		end
@@ -100,11 +100,11 @@ wire [10:0] dsp_height = vs_pol ? vs_low : vs_high;
 wire doublescan = (dsp_height>350);
 
 reg auto_ce_pix;
+reg [15:0] cnt = 0;
+reg  [2:0] pixsz;
+reg  [2:0] pixcnt;
+reg        hs;
 always @(posedge clk_sys) begin
-	reg [15:0] cnt = 0;
-	reg  [2:0] pixsz;
-	reg  [2:0] pixcnt;
-	reg        hs;
 
 	cnt <= cnt + 1'd1;
 	hs <= HSync;
@@ -129,9 +129,9 @@ end
 
 wire ce_pix = OSD_AUTO_CE ? auto_ce_pix : ce;
 
+reg hsD;
+reg vsD;
 always @(posedge clk_sys) begin
-	reg hsD;
-	reg vsD;
 
 	if(ce_pix) begin
 		// bring hsync into local clock domain
@@ -209,8 +209,8 @@ always @(posedge clk_sys) begin
 	end
 end
 
-assign R_out = !osd_de ? R_in : {osd_pixel, osd_pixel, OSD_COLOR[2], R_in[5:3]};
-assign G_out = !osd_de ? G_in : {osd_pixel, osd_pixel, OSD_COLOR[1], G_in[5:3]};
-assign B_out = !osd_de ? B_in : {osd_pixel, osd_pixel, OSD_COLOR[0], B_in[5:3]};
+assign R_out = !osd_de ? R_in : {osd_pixel, osd_pixel, OSD_COLOR[2]};
+assign G_out = !osd_de ? G_in : {osd_pixel, osd_pixel, OSD_COLOR[1]};
+assign B_out = !osd_de ? B_in : {osd_pixel, osd_pixel, OSD_COLOR[0]};
 
 endmodule
