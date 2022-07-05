@@ -8,103 +8,68 @@ module zxd
 	output wire[17:0] rgb,
 
 	inout  wire       ps2kCk,
-	inout  wire       ps2kDq,
+	inout  wire       ps2kDQ,
 
-	output wire       usdCs,
-	output wire       usdCk,
-	output wire       usdDo,
-	input  wire       usdDi,
+	output wire       sdcCs,
+	output wire       sdcCk,
+	output wire       sdcMosi,
+	input  wire       sdcMiso,
 
 	output wire       sramUb,
 	output wire       sramLb,
 	output wire       sramOe,
 	output wire       sramWe,
-	inout  wire[15:0] sramDq,
+	inout  wire[15:8] sramDQ,
 	output wire[20:0] sramA,
 
 	output wire       led
 );
 //-------------------------------------------------------------------------------------------------
 
-wire ci;
-IBUFG IBufg(.I(clock50), .O(ci));
+wire clock28;
+clock clock(clock50, clock28, power);
 
-wire bf, ck, co;
-wire clock56;
-wire locked;
-
-DCM_SP #
-(
-	.CLKIN_PERIOD          (20.000),
-	.CLKFX_DIVIDE          (25    ),
-	.CLKFX_MULTIPLY        (28    )
-)
-Dcm0
-(
-	.RST                   (1'b0),
-	.DSSEN                 (1'b0),
-	.PSCLK                 (1'b0),
-	.PSEN                  (1'b0),
-	.PSINCDEC              (1'b0),
-	.CLKIN                 (ci),
-	.CLKFB                 (bf),
-	.CLK0                  (ck),
-	.CLK90                 (),
-	.CLK180                (),
-	.CLK270                (),
-	.CLK2X                 (),
-	.CLK2X180              (),
-	.CLKFX                 (co),
-	.CLKFX180              (),
-	.CLKDV                 (),
-	.PSDONE                (),
-	.STATUS                (),
-	.LOCKED                (locked)
-);
-
-BUFG BufgFb(.I(ck), .O(bf));
-BUFG BufgCo(.I(co), .O(clock56));
-
-reg ne7M0;
-reg[2:0] ce = 1;
-always @(negedge clock56) if(locked) begin
-	ce <= ce+1'd1;
-	ne7M0 <= ~ce[0] & ~ce[1] & ~ce[2];
-end
+reg[1:0] ce = 0;
+wire ne14M = ~ce[0];
+wire ne7M0 = ~ce[0] & ~ce[1];
+always @(negedge clock28) if(power) ce <= ce+1'd1;
 
 //-------------------------------------------------------------------------------------------------
 
-wire spiDo;
-wire spiDi;
+wire spiCk = sdcCk;
 wire spiSs2;
 wire spiSs3;
 wire spiSs4;
-wire confD0;
+wire spiSsIo;
+wire spiMosi;
+wire spiMiso;
 
-wire ps2kOCk;
-wire ps2kODq;
+wire kbiCk = ps2kCk;
+wire kbiDQ = ps2kDQ;
+wire kboCk; assign ps2kCk = kboCk ? 1'bZ : kboCk;
+wire kboDQ; assign ps2kDQ = kboDQ ? 1'bZ : kboDQ;
 
-substitute_mcu #(.sysclk_frequency(560)) controller
+substitute_mcu #(.sysclk_frequency(280)) controller
 (
-	.clk          (clock56),
+	.clk          (clock28),
 	.reset_in     (1'b1   ),
 	.reset_out    (       ),
-	.spi_cs       (usdCs  ),
-	.spi_clk      (usdCk  ),
-	.spi_mosi     (usdDo  ),
-	.spi_miso     (usdDi  ),
-	.spi_fromguest(spiDo  ),
-	.spi_toguest  (spiDi  ),
+	.spi_cs       (sdcCs  ),
+	.spi_clk      (sdcCk  ),
+	.spi_mosi     (sdcMosi),
+	.spi_miso     (sdcMiso),
+	.spi_req      (       ),
+	.spi_ack      (1'b1   ),
 	.spi_ss2      (spiSs2 ),
 	.spi_ss3      (spiSs3 ),
 	.spi_ss4      (spiSs4 ),
-	.spi_req      (       ),
-	.spi_ack      (1'b1   ),
-	.conf_data0   (confD0 ),
-	.ps2k_clk_in  (ps2kCk ),
-	.ps2k_dat_in  (ps2kDq ),
-	.ps2k_clk_out (ps2kOCk),
-	.ps2k_dat_out (ps2kODq),
+	.conf_data0   (spiSsIo),
+	.spi_toguest  (spiMosi),
+	.spi_fromguest(spiMiso),
+	.ps2k_clk_in  (kbiCk  ),
+	.ps2k_dat_in  (kbiDQ  ),
+	.ps2k_clk_out (kboCk  ),
+	.ps2k_dat_out (kboDQ  ),
 	.ps2m_clk_in  (1'b1   ),
 	.ps2m_dat_in  (1'b1   ),
 	.ps2m_clk_out (       ),
@@ -114,86 +79,126 @@ substitute_mcu #(.sysclk_frequency(560)) controller
 	.joy3         (8'hFF  ),
 	.joy4         (8'hFF  ),
 	.buttons      (8'hFF  ),
-	.c64_keys     (64'hFFFFFFFF),
 	.rxd          (1'b0   ),
 	.txd          (       ),
-	.intercept    (       )
+	.intercept    (       ),
+	.c64_keys     (64'hFFFFFFFF)
 );
 
-assign ps2kCk = !ps2kOCk ? 1'b0 : 1'bZ;
-assign ps2kDq = !ps2kODq ? 1'b0 : 1'bZ;
-
-BUFG BufgSD(.I(usdCk), .O(spiCk));
+//BUFG BufgSD(.I(usdCk), .O(spiCk));
 
 //-------------------------------------------------------------------------------------------------
 
 localparam CONF_STR =
 {
-	"zx48;;",
-	"O01,SCR,0,1,2,3;",
-	"V,v1.0"
+	"ZXKYP;;",
+	"O01,SCR,0,1,2,3;"
 };
 
-wire       ioctl_download;
-wire[ 7:0] ioctl_index;
-wire       ioctl_ce = 1'b1;
-wire       ioctl_wr;
-wire[24:0] ioctl_addr;
-wire[ 7:0] ioctl_dout;
+wire[63:0] status;
 
-wire[31:0] status;
-
-mist_io #(28) mist_io
+user_io #(.STRLEN(23), .SD_IMAGES(1)) user_io
 (
-	.clk_sys       (clock56 ),
 	.conf_str      (CONF_STR),
-
-	.SPI_SCK       (spiCk),
-	.SPI_DO        (spiDo),
-	.SPI_DI        (spiDi),
-	.SPI_SS2       (spiSs2),
-	.CONF_DATA0    (confD0),
-
-	.ioctl_download(ioctl_download),
-	.ioctl_index   (ioctl_index   ),
-	.ioctl_ce      (ioctl_ce      ),
-	.ioctl_wr      (ioctl_wr      ),
-	.ioctl_addr    (ioctl_addr    ),
-	.ioctl_dout    (ioctl_dout    ),
-
-	.sd_conf       (1'b0),
-	.sd_sdhc       (1'b0),
-	.sd_lba        (32'd0),
-	.sd_rd         (2'd0),
-	.sd_wr         (2'd0),
+	.conf_chr      (        ),
+	.conf_addr     (        ),
+	.clk_sys       (clock28 ),
+	.clk_sd        (clock28 ),
+	.SPI_CLK       (spiCk   ),
+	.SPI_SS_IO     (spiSsIo ),
+	.SPI_MOSI      (spiMosi ),
+	.SPI_MISO      (spiMiso ),
+	.status        (status  ),
+	.buttons       (),
+	.switches      (),
+	.key_code      (),
+	.key_strobe    (),
+	.key_pressed   (),
+	.key_extended  (),
+	.joystick_0    (),
+	.joystick_1    (),
+	.sd_rd         (),
+	.sd_wr         (),
+	.sd_sdhc       (),
 	.sd_ack        (),
+	.sd_conf       (),
+	.sd_lba        (),
 	.sd_ack_conf   (),
 	.sd_buff_addr  (),
-	.sd_buff_dout  (),
-	.sd_buff_din   (8'd0),
-	.sd_buff_wr    (),
-	.img_mounted   (),
+	.sd_din        (),
+	.sd_dout       (),
+	.sd_din_strobe (),
+	.sd_dout_strobe(),
 	.img_size      (),
-
+	.img_mounted   (),
+	.mouse_x       (),
+	.mouse_y       (),
+	.mouse_z       (),
+	.mouse_idx     (),
+	.mouse_flags   (),
+	.mouse_strobe  (),
+	.serial_data   (8'd0),
+	.serial_strobe (1'd0),
+	.rtc           (),
+	.ypbpr         (),
+	.no_csync      (),
+	.core_mod      (),
+	.joystick_2    (),
+	.joystick_3    (),
+	.joystick_4    (),
 	.ps2_kbd_clk   (),
 	.ps2_kbd_data  (),
+	.ps2_kbd_clk_i (),
+	.ps2_kbd_data_i(),
 	.ps2_mouse_clk (),
 	.ps2_mouse_data(),
-	.ps2_key       (),
-	.ps2_mouse     (),
-
-	.status        (status),
-	.buttons       (      ),
-	.switches      (      ),
-
-	.joystick_0       (   ),
-	.joystick_1       (   ),
-	.joystick_analog_0(   ),
-	.joystick_analog_1(   ),
-
-	.ypbpr              ( ),
-	.scandoubler_disable( )
+	.ps2_mouse_clk_i(),
+	.ps2_mouse_data_i(),
+	.joystick_analog_0(),
+	.joystick_analog_1(),
+	.scandoubler_disable()
 );
+
+wire       ioctlB;
+wire       ioctlW;
+wire[24:0] ioctlA;
+wire[ 7:0] ioctlQ;
+
+data_io data_io
+(
+	.clk_sys       (clock28 ),
+	.clkref_n      (1'b0    ),
+	.SPI_SCK       (spiCk   ),
+	.SPI_SS2       (spiSs2  ),
+	.SPI_SS4       (spiSs4  ),
+	.SPI_DI        (spiMosi ),
+	.SPI_DO        (spiMiso ),
+	.ioctl_index   (        ),
+	.ioctl_upload  (        ),
+	.ioctl_download(ioctlB  ),
+	.ioctl_wr      (ioctlW  ),
+	.ioctl_addr    (ioctlA  ),
+	.ioctl_din     (        ),
+	.ioctl_dout    (ioctlQ  ),
+	.ioctl_fileext (        ),
+	.ioctl_filesize(        )
+);
+
+//-------------------------------------------------------------------------------------------------
+/*
+wire       ramW = ioctlB ? ioctlW : 1'b0;
+wire[14:0] ramA = ioctlB ? ioctlA[14:0] : { status[1:0], a };
+wire[ 7:0] ramD = ioctlQ;
+wire[ 7:0] ramQ;
+ram #(32) ram(clock28, 1'b1, ramW, ramA, ramD, ramQ);
+*/
+
+assign sramUb = 1'b0;
+assign sramLb = 1'b1;
+assign sramOe = 1'b0;
+assign sramWe = ioctlB ? !ioctlW : 1'b1;
+assign sramDQ = sramWe ? 8'bZ : ioctlQ;
+assign sramA = { 6'd0, ioctlB ? ioctlA[14:0] : { status[1:0], a } };
 
 //-------------------------------------------------------------------------------------------------
 
@@ -203,14 +208,13 @@ wire blank;
 wire vsync, hsync;
 wire r, g, b, i;
 
-wire[ 7:0] d = sramDq[7:0];
+wire[ 7:0] d = sramDQ;
 wire[12:0] a;
 
 video Video
 (
-	.clock  (clock56),
+	.clock  (clock28),
 	.ce     (ne7M0  ),
-	.model  (1'b0   ),
 	.border (border ),
 	.blank  (blank  ),
 	.vsync  (vsync  ),
@@ -225,17 +229,17 @@ video Video
 
 //-------------------------------------------------------------------------------------------------
 
-wire[5:0] ri = { blank ? 1'd0 : r, r, {4{ r&i }} };
-wire[5:0] gi = { blank ? 1'd0 : g, g, {4{ g&i }} };
-wire[5:0] bi = { blank ? 1'd0 : b, b, {4{ b&i }} };
-wire[5:0] ro, go, bo;
+wire[2:0] ri = { blank ? 1'd0 : r, r&i, r };
+wire[2:0] gi = { blank ? 1'd0 : g, g&i, g };
+wire[2:0] bi = { blank ? 1'd0 : b, b&i, b };
+wire[2:0] ro, go, bo;
 
-osd #(.OSD_X_OFFSET(10), .OSD_Y_OFFSET(10), .OSD_COLOR(4)) osd
+osd #(.OSD_X_OFFSET(10), .OSD_Y_OFFSET(10), .OSD_COLOR(4), .OSD_AUTO_CE(0)) osd
 (
-	.clk_sys(clock56),
-	.ce     (ne7M0  ),
+	.clk_sys(clock28),
+	.ce     (ne14M  ),
 	.SPI_SCK(spiCk  ),
-	.SPI_DI (spiDi  ),
+	.SPI_DI (spiMosi),
 	.SPI_SS3(spiSs3 ),
 	.rotate (2'd0   ),
 	.VSync  (vsync  ),
@@ -248,26 +252,12 @@ osd #(.OSD_X_OFFSET(10), .OSD_Y_OFFSET(10), .OSD_COLOR(4)) osd
 	.B_out  (bo     )
 );
 
+//-------------------------------------------------------------------------------------------------
+
 assign sync = { 1'b1, ~(hsync ^ vsync) };
-assign rgb = { ro, go, bo };
+assign rgb = { ro,ro, go,go, bo,bo };
 
-//-------------------------------------------------------------------------------------------------
-
-wire       iniBusy = ioctl_download;
-wire       iniWr = ioctl_wr;
-wire[15:0] iniA = ioctl_addr[15:0];
-wire[ 7:0] iniD = ioctl_dout;
-
-assign sramUb = 1'b1;
-assign sramLb = 1'b0;
-assign sramOe = 1'b0;
-assign sramWe = iniBusy ? !iniWr : 1'b1;
-assign sramDq = sramWe ? 16'bZ : {2{ iniD }};
-assign sramA  = { 5'd0, iniBusy ? iniA : { 1'b0, status[1:0], a } };
-
-//-------------------------------------------------------------------------------------------------
-
-assign led = ~usdCs;
+assign led = 1'b1;
 
 //-------------------------------------------------------------------------------------------------
 endmodule
