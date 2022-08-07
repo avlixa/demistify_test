@@ -1,3 +1,6 @@
+
+`default_nettype none
+
 //-------------------------------------------------------------------------------------------------
 module zxd
 //-------------------------------------------------------------------------------------------------
@@ -26,7 +29,7 @@ module zxd
 );
 //-------------------------------------------------------------------------------------------------
 
-wire clock28;
+wire clock28, power;
 clock clock(clock50, clock28, power);
 
 reg[1:0] ce = 0;
@@ -96,6 +99,8 @@ localparam CONF_STR =
 };
 
 wire[63:0] status;
+wire [7:0] key_code;
+wire       key_pressed;
 
 user_io #(.STRLEN(23), .SD_IMAGES(1)) user_io
 (
@@ -111,9 +116,9 @@ user_io #(.STRLEN(23), .SD_IMAGES(1)) user_io
 	.status        (status  ),
 	.buttons       (),
 	.switches      (),
-	.key_code      (),
+	.key_code      (key_code),
 	.key_strobe    (),
-	.key_pressed   (),
+	.key_pressed   (key_pressed),
 	.key_extended  (),
 	.joystick_0    (),
 	.joystick_1    (),
@@ -204,7 +209,7 @@ assign sramA = { 6'd0, ioctlB ? ioctlA[14:0] : { status[1:0], a } };
 
 wire[2:0] border = 3'd0;
 
-wire blank;
+wire blank,hblank,vblank;
 wire vsync, hsync;
 wire r, g, b, i;
 
@@ -217,6 +222,8 @@ video Video
 	.ce     (ne7M0  ),
 	.border (border ),
 	.blank  (blank  ),
+   .hblank (hblank ),
+   .vblank (vblank ),
 	.vsync  (vsync  ),
 	.hsync  (hsync  ),
 	.r      (r      ),
@@ -227,6 +234,36 @@ video Video
 	.a      (a      )
 );
 
+wire [2:0] R_sd;
+wire [2:0] G_sd;
+wire [2:0] B_sd;
+wire hs_sd, vs_sd, hb_sd, vb_sd, ce_pix_sd;
+
+scandoubler #(.LENGTH(768), .HALF_DEPTH(0)) sd
+(
+   .clk_vid(clock28),
+   .hq2x(1'b0),
+
+   .ce_pix(ne7M0),
+   .hs_in(hsync),
+   .vs_in(vsync),
+   .hb_in(hblank),
+   .vb_in(vblank),
+   .r_in(ri),
+   .g_in(gi),
+   .b_in(bi),
+
+   .ce_pix_out(ce_pix_sd),
+   .hs_out(hs_sd),
+   .vs_out(vs_sd),
+   .hb_out(hb_sd),
+   .vb_out(vb_sd),
+   .r_out(R_sd),
+   .g_out(G_sd),
+   .b_out(B_sd)
+);
+
+
 //-------------------------------------------------------------------------------------------------
 
 wire[2:0] ri = { blank ? 1'd0 : r, r&i, r };
@@ -234,28 +271,51 @@ wire[2:0] gi = { blank ? 1'd0 : g, g&i, g };
 wire[2:0] bi = { blank ? 1'd0 : b, b&i, b };
 wire[2:0] ro, go, bo;
 
+wire[2:0] rosd = scandoubler ? R_sd : ri;
+wire[2:0] gosd = scandoubler ? G_sd : gi;
+wire[2:0] bosd = scandoubler ? B_sd : bi;
+wire vsosd = scandoubler ? vs_sd : vsync;
+wire hsosd = scandoubler ? hs_sd : hsync;
+
 osd #(.OSD_X_OFFSET(10), .OSD_Y_OFFSET(10), .OSD_COLOR(4), .OSD_AUTO_CE(0)) osd
 (
 	.clk_sys(clock28),
-	.ce     (ne14M  ),
+//	.ce     (ne14M  ),
+   .ce     (ce_pix_sd),
 	.SPI_SCK(spiCk  ),
 	.SPI_DI (spiMosi),
 	.SPI_SS3(spiSs3 ),
 	.rotate (2'd0   ),
-	.VSync  (vsync  ),
-	.HSync  (hsync  ),
-	.R_in   (ri     ),
-	.G_in   (gi     ),
-	.B_in   (bi     ),
+//	.VSync  (vsync  ),
+//	.HSync  (hsync  ),
+//	.R_in   (ri     ),
+//	.G_in   (gi     ),
+//	.B_in   (bi     ),
+	.VSync  (vsosd  ),
+	.HSync  (hsosd  ),
+	.R_in   (rosd     ),
+	.G_in   (gosd     ),
+	.B_in   (bosd     ),
 	.R_out  (ro     ),
 	.G_out  (go     ),
 	.B_out  (bo     )
 );
 
+reg scandoubler = 1;
+reg [8:0] key_tmp;
+always @(negedge clock28) begin
+   key_tmp <= {key_pressed, key_code};
+   if (!(key_tmp == {key_pressed, key_code}) && ({key_pressed, key_code} == 9'h17e)) begin
+      scandoubler <= ~scandoubler;
+   end
+end
+
+
 //-------------------------------------------------------------------------------------------------
 
-assign sync = { 1'b1, ~(hsync ^ vsync) };
+//assign sync = { 1'b1, ~(hsync ^ vsync) };
 assign rgb = { ro,ro, go,go, bo,bo };
+assign sync = scandoubler ? { vs_sd, hs_sd } : { 1'b1, ~(hsync ^ vsync) };
 
 assign led = 1'b1;
 

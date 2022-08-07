@@ -20,11 +20,11 @@
     </file>
     <file xil_pn:name="zxd.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="2"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="30"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="32"/>
     </file>
     <file xil_pn:name="../src/ctrl/controller_rom.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="12"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="21"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="22"/>
     </file>
     <file xil_pn:name="../src/ctrl/demistify_config_pkg.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="15"/>
@@ -32,35 +32,35 @@
     </file>
     <file xil_pn:name="../src/ctrl/interrupt_controller.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="16"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="20"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="21"/>
     </file>
     <file xil_pn:name="../src/ctrl/io_ps2_com.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="17"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="19"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="20"/>
     </file>
     <file xil_pn:name="../src/ctrl/jtag_uart.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="18"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="18"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="19"/>
     </file>
     <file xil_pn:name="../src/ctrl/simple_uart.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="19"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="17"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="18"/>
     </file>
     <file xil_pn:name="../src/ctrl/spi_controller.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="20"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="16"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="17"/>
     </file>
     <file xil_pn:name="../src/ctrl/substitute_mcu.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="21"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="29"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="31"/>
     </file>
     <file xil_pn:name="../src/ctrl/timer_controller.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="22"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="15"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="16"/>
     </file>
     <file xil_pn:name="../src/832/debug_bridge_jtag.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="23"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="23"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="24"/>
     </file>
     <file xil_pn:name="../src/832/debug_fifo_altera.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="24"/>
@@ -84,7 +84,7 @@
     </file>
     <file xil_pn:name="../src/832/eightthirtytwo_cpu.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="29"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="22"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="23"/>
     </file>
     <file xil_pn:name="../src/832/eightthirtytwo_debug.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="30"/>
@@ -112,7 +112,7 @@
     </file>
     <file xil_pn:name="../src/video.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="37"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="25"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="26"/>
     </file>
     <file xil_pn:name="../src/ctrl/controller_rom1_byte.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="38"/>
@@ -124,19 +124,27 @@
     </file>
     <file xil_pn:name="../src/mist/data_io.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="81"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="28"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="30"/>
     </file>
     <file xil_pn:name="../src/mist/osd.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="82"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="27"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="29"/>
     </file>
     <file xil_pn:name="../src/mist/user_io.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="83"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="26"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="28"/>
     </file>
     <file xil_pn:name="clock.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="84"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="24"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="25"/>
+    </file>
+    <file xil_pn:name="../src/scandoubler.v" xil_pn:type="FILE_VERILOG">
+      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="32"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="27"/>
+    </file>
+    <file xil_pn:name="../src/dpram_xilinx.v" xil_pn:type="FILE_VERILOG">
+      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="33"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="15"/>
     </file>
   </files>
 
@@ -203,7 +211,7 @@
     <property xil_pn:name="Enable External Master Clock spartan6" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Enable Hardware Co-Simulation" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Enable Internal Done Pipe" xil_pn:value="true" xil_pn:valueState="non-default"/>
-    <property xil_pn:name="Enable Message Filtering" xil_pn:value="false" xil_pn:valueState="default"/>
+    <property xil_pn:name="Enable Message Filtering" xil_pn:value="true" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Enable Multi-Pin Wake-Up Suspend Mode spartan6" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Enable Multi-Threading" xil_pn:value="Off" xil_pn:valueState="default"/>
     <property xil_pn:name="Enable Multi-Threading par spartan6" xil_pn:value="Off" xil_pn:valueState="default"/>
@@ -435,7 +443,7 @@
     <property xil_pn:name="Use Synchronous Reset" xil_pn:value="Auto" xil_pn:valueState="default"/>
     <property xil_pn:name="Use Synchronous Set" xil_pn:value="Auto" xil_pn:valueState="default"/>
     <property xil_pn:name="Use Synthesis Constraints File" xil_pn:value="true" xil_pn:valueState="default"/>
-    <property xil_pn:name="User Browsed Strategy Files" xil_pn:value="" xil_pn:valueState="default"/>
+    <property xil_pn:name="User Browsed Strategy Files" xil_pn:value="/opt/Xilinx/14.7/ISE_DS/ISE/data/default.xds" xil_pn:valueState="non-default"/>
     <property xil_pn:name="UserID Code (8 Digit Hexadecimal)" xil_pn:value="0xFFFFFFFF" xil_pn:valueState="default"/>
     <property xil_pn:name="VCCAUX Voltage Level spartan6" xil_pn:value="2.5V" xil_pn:valueState="default"/>
     <property xil_pn:name="VHDL Source Analysis Standard" xil_pn:value="VHDL-93" xil_pn:valueState="default"/>
@@ -444,7 +452,7 @@
     <property xil_pn:name="Wait for DCM and PLL Lock (Output Events) spartan6" xil_pn:value="Default (NoWait)" xil_pn:valueState="default"/>
     <property xil_pn:name="Wakeup Clock spartan6" xil_pn:value="Startup Clock" xil_pn:valueState="default"/>
     <property xil_pn:name="Watchdog Timer Value spartan6" xil_pn:value="0xFFFF" xil_pn:valueState="default"/>
-    <property xil_pn:name="Working Directory" xil_pn:value="tmp" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Working Directory" xil_pn:value="work" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Write Timing Constraints" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="iMPACT Project File" xil_pn:value="../impact/zxd.ipf" xil_pn:valueState="non-default"/>
     <!--                                                                                  -->

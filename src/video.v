@@ -8,6 +8,8 @@ module video
 	input  wire[ 2:0] border,
 
 	output wire       blank,
+   output wire       hblank,
+   output wire       vblank,
 	output wire       vsync,
 	output wire       hsync,
 	output wire       r,
@@ -66,7 +68,10 @@ wire dataSelect = dataOutput[7] ^ (fCount[4] & attrOutput[7]);
 
 //-------------------------------------------------------------------------------------------------
 
-assign blank = (hCount >= 320 && hCount <= 415) || (vCount >= 248 && vCount <= 255);
+assign hblank = (hCount >= 320 && hCount <= 415);
+assign vblank = (vCount >= 248 && vCount <= 255);
+assign blank = hblank || vblank;
+
 assign vsync = vCount >= 248 && vCount <= 251;
 assign hsync = hCount >= 344 && hCount <= 375;
 assign r = dataSelect ? attrOutput[1] : attrOutput[4];
